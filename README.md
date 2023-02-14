@@ -11,6 +11,13 @@ This repository contains a script for generating a Docker Compose YAML file for 
 - All variables are set by default. Strawberry GraphQL Django and Strawberry Django Plus are None by default
 - run.sh file will be generated to have a simple list of commands
 
+# Links
+- https://strawberry.rocks/docs
+- https://strawberry-graphql.github.io/strawberry-graphql-django/
+- https://blb-ventures.github.io/strawberry-django-plus/
+- https://docs.djangoproject.com/en
+
+
 # Contributing
 #### Contributions to this repository are welcome. If you encounter any issues or have suggestions for improvement, please open an issue or submit a pull request.
 
