@@ -14,14 +14,17 @@ psycopg2=${psycopg2:-2.9.5}
 read -p "Enter the strawberry version (default: 0.155.4): " strawberry_graphql
 strawberry_graphql=${strawberry_graphql:-0.155.4}
 
-read -p "Enter the strawberry-graphql-django version (default: 0.9.2): " strawberry_graphql_django
-strawberry_graphql_django=${strawberry_graphql_django:-0.9.2}
+read -p "Enter the strawberry-graphql-django version (default: None): " strawberry_graphql_django
+strawberry_graphql_django=${strawberry_graphql_django:-None}
 
 read -p "Enter the strawberry-django-plus version (default: None): " strawberry_django_plus
 strawberry_django_plus=${strawberry_django_plus:-None}
 
 read -p "Enter the django-extensions version (default: 3.2.1): " django_extensions
 django_extensions=${django_extensions:-3.2.1}
+
+read -p "Enter Python image version (default: python:3.11.1-buster): " python_image
+python_image=${python_image:-python:3.11.1-buster}
 
 touch .env
 
@@ -39,25 +42,84 @@ virtualenv venv
 source venv/Scripts/activate
 
 pip install django==$django python-decouple==$python_decouple psycopg2==$psycopg2 django-extensions==$django_extensions
-pip install strawberry-graphql==$strawberry_graphql strawberry-graphql-django==$strawberry_graphql_django
+pip install strawberry-graphql==$strawberry_graphql 
 
 
 if [ "$strawberry_django_plus" != "None" ]; 
 then 
     pip install strawberry-django-plus==$strawberry_django_plus
-    cat << EOF > .env
-    POSTGRESQL_DATABASE=$postgres_database
-    POSTGRESQL_USER=$postgres_user
-    POSTGRESQL_HOST=$postgres_host
-    POSTGRESQL_PORT=$postgres_port
-    POSTGRESQL_PASSWORD=$postgres_password
-    STRAWBERRY_DJANGO_PLUS_INSTALLED=strawberry_django_plus
+    cat << EOF >> .env
+STRAWBERRY_DJANGO_PLUS_INSTALLED=strawberry_django_plus
 EOF
+fi
 
+if [ "$strawberry_graphql_django" != "None" ]; 
+then 
+    pip install strawberry-graphql-django==$strawberry_graphql_django
+    cat << EOF >> .env
+STRAWBERRY_GRAPHQL_DJANGO_INSTALLED=strawberry_graphql_django
+EOF
 fi
 pip freeze > requirements.txt
 
 django-admin startproject $project .
+
+cat << EOF > "run.sh"
+#!/bin/bash
+
+
+case "\$1" in
+    "docker_build")
+        echo "Building docker"
+        docker-compose build
+        ;;
+    "docker_up")
+        echo "Starting docker"
+        docker-compose up
+        ;;
+    "docker_down")
+        echo "Stopping docker"
+        docker-compose down
+        ;;
+    "docker_restart")
+        echo "Restarting docker"
+        docker-compose restart
+        ;;
+    "make_migrations")
+        echo "Making migrations"
+        docker-compose exec web python manage.py makemigrations
+        ;;
+    "migrate")
+        echo "Migrating"
+        docker-compose exec web python manage.py migrate
+        ;;
+    "create_superuser")
+        echo "Creating superuser"
+        docker-compose exec web python manage.py createsuperuser
+        ;;
+    "run_tests")
+        echo "Running tests"
+        docker-compose exec web python manage.py test
+        ;;
+    "collect_static")
+        echo "Collecting static"
+        docker-compose exec web python manage.py collectstatic
+        ;;
+    "runserver")
+        echo "Running server"
+        docker-compose exec web python manage.py runserver
+        ;;
+    "shell")
+        echo "Running shell"
+        docker-compose exec web python manage.py shell_plus
+        ;;
+    *)
+        echo "Invalid command"
+        exit 1
+        ;;
+esac
+
+EOF
 
 cat << EOF > "$project/settings.py"
 """
@@ -94,7 +156,6 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Application definition
-STRAWBERRY_DJANGO_PLUS_INSTALLED=config("STRAWBERRY_DJANGO_PLUS_INSTALLED", default=None)
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -105,9 +166,8 @@ INSTALLED_APPS = [
     'strawberry.django',
     'django_extensions',
 ]
-if STRAWBERRY_DJANGO_PLUS_INSTALLED is not None:
-    INSTALLED_APPS.append(STRAWBERRY_DJANGO_PLUS_INSTALLED)
-
+if config("STRAWBERRY_DJANGO_PLUS_INSTALLED", default=None) is not None:
+    INSTALLED_APPS.append(config("STRAWBERRY_DJANGO_PLUS_INSTALLED", default=None))
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

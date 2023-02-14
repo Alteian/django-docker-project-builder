@@ -1,8 +1,5 @@
 #!/bin/bash
 
-read -p "Enter Python image version (default: python:3.11.1-buster): " python_image
-python_image=${python_image:-python:3.11.1-buster}
-
 cat << EOF > "$project/Dockerfile"
 FROM $python_image
 
