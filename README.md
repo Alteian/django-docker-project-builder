@@ -1,4 +1,5 @@
-# django-docker-cookiecutter
+# django-docker-project-builder
+
 Scripts to start Dockerized Django project with PostgreSQL and Strawberry GraphQL.
 
 commands are listed in run.sh
