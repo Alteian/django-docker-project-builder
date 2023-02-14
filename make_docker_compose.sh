@@ -21,9 +21,6 @@ postgres_host=${postgres_host:-postgres}
 read -p "Enter the name of the Postgres port (default: 5432:5432): " postgres_port
 postgres_port=${postgres_port:-5432:5432}
 
-read -p "Enter Trust authentication for local connections (default: trust): " postgres_auth
-postgres_auth=${postgres_auth:-trust}
-
 read -p "Enter the name of the Postgres database (default: postgres): " postgres_database
 postgres_database=${postgres_database:-postgres}
 
