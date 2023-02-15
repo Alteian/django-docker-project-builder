@@ -2,14 +2,23 @@
 
 source make_docker_compose.sh
 
+read -p "Enter your OS(linux, ios) (default: linux): " os
+os=${os:-linux}
+
 read -p "Enter the Django version (default: 4.1.5): " django
 django=${django:-4.1.5}
 
 read -p "Enter the python-decouple version (default: 3.7): " python_decouple
 python_decouple=${python_decouple:-3.7}
 
-read -p "Enter the psycopg2 version (default: 2.9.5): " psycopg2
-psycopg2=${psycopg2:-2.9.5}
+if [ "$os" == "linux" ]; then
+    read -p "Enter the psycopg2 version (default: 2.9.5): " psycopg2
+    psycopg2=${psycopg2:-2.9.5}
+fi
+if [ "$os" == "ios" ]; then
+    read -p "Enter the psycopg2 version (default: 2.9.5): " psycopg2_binary
+    psycopg2_binary=${psycopg2_binary:-2.9.5}
+fi
 
 read -p "Enter the strawberry version (default: 0.155.4): " strawberry_graphql
 strawberry_graphql=${strawberry_graphql:-0.155.4}
@@ -41,8 +50,14 @@ virtualenv venv
 
 source venv/Scripts/activate
 
-pip install django==$django python-decouple==$python_decouple psycopg2==$psycopg2 django-extensions==$django_extensions
+pip install django==$django python-decouple==$python_decouple django-extensions==$django_extensions
 pip install strawberry-graphql==$strawberry_graphql 
+if [ "$os" == "linux" ]; then
+    pip install psycopg2==$psycopg2
+fi
+if [ "$os" == "ios" ]; then
+    pip install psycopg2-binary==$psycopg2_binary
+fi
 
 
 if [ "$strawberry_django_plus" != "None" ]; 
