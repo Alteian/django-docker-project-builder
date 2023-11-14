@@ -1,3 +1,6 @@
+# Currently deprecated, might be adjusted and reworked as set of scripts in future.
+
+
 # Overview
 This repository contains a script for generating a Docker Compose YAML file for a Django web application with a PostgreSQL database. The script prompts the user for input on various settings, such as the Docker Compose version, project name, image names for Django and PostgreSQL, and database connection settings.
 
